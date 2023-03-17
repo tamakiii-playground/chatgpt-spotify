@@ -219,14 +219,6 @@ async function findPlayList(playlists, name) {
   const clientId = process.env.SPOTIFY_CLIENT_ID;
   const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 
-  // const accessToken = await getAccessToken(clientId, clientSecret);
-
-  // if (accessToken) {
-  //   console.log('Access token:', accessToken);
-  // } else {
-  //   console.error('Failed to get access token');
-  // }
-
 	const redirectUri = 'http://localhost:8080/callback';
 	const scopes = ['playlist-read-private', 'playlist-modify-private', 'playlist-modify-public'];
 	const state = crypto.randomBytes(16).toString('hex');
