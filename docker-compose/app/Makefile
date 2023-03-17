@@ -1,1 +1,1 @@
-include ../../Makefile
+include ../../docker-compose.mk
