@@ -10,7 +10,7 @@ build: docker-compose.yaml
 	docker compose build
 
 bash:
-	docker compose run --rm -it $(notdir $(CURDIR)) $@
+	docker compose run --rm -it --service-ports $(notdir $(CURDIR)) $@
 
 teardown:
 	rm -rf .env
