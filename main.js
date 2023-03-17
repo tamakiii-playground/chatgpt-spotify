@@ -23,6 +23,29 @@ async function getAccessToken(clientId, clientSecret) {
   }
 }
 
+async function searchTrack(accessToken, query) {
+  const searchEndpoint = 'https://api.spotify.com/v1/search';
+  const config = {
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+    },
+    params: {
+      q: query,
+      type: 'track',
+      limit: 1,
+    },
+  };
+
+  try {
+    const response = await axios.get(searchEndpoint, config);
+    const tracks = response.data.tracks.items;
+    return tracks.length > 0 ? tracks[0].id : null;
+  } catch (error) {
+    console.error('Error searching track', error);
+    return null;
+  }
+}
+
 (async () => {
   const clientId = process.env.SPOTIFY_CLIENT_ID;
   const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
@@ -33,5 +56,14 @@ async function getAccessToken(clientId, clientSecret) {
     console.log('Access token:', accessToken);
   } else {
     console.error('Failed to get access token');
+  }
+
+	const query = 'The Beatles - Come Together';
+	const trackId = await searchTrack(accessToken, query);
+
+  if (trackId) {
+    console.log('Track ID:', trackId);
+  } else {
+    console.error('Track not found');
   }
 })();
