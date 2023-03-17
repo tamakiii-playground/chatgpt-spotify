@@ -88,7 +88,7 @@ async function addTracksToPlaylist(accessToken, playlistId, trackIds) {
   try {
     await axios.post(addTracksEndpoint, data, config);
   } catch (error) {
-		throw error;
+    throw error;
   }
 }
 
@@ -220,9 +220,9 @@ async function findPlayList(playlists, name) {
   const clientId = process.env.SPOTIFY_CLIENT_ID;
   const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 
-	const redirectUri = 'http://localhost:8080/callback';
-	const scopes = ['playlist-read-private', 'playlist-modify-private', 'playlist-modify-public'];
-	const state = crypto.randomBytes(16).toString('hex');
+  const redirectUri = 'http://localhost:8080/callback';
+  const scopes = ['playlist-read-private', 'playlist-modify-private', 'playlist-modify-public'];
+  const state = crypto.randomBytes(16).toString('hex');
 
   const args = process.argv.slice(2);
 
@@ -234,29 +234,29 @@ async function findPlayList(playlists, name) {
   const playlistName = args[0];
   const query = args[1];
 
-	openSpotifyAuthorizationUrl(clientId, redirectUri, scopes, state);
+  openSpotifyAuthorizationUrl(clientId, redirectUri, scopes, state);
 
-	const authorizationCode = await waitForAuthorizationCode(8080);
-	if (!authorizationCode) {
-		console.error('Error getting authorization code');
-		return;
-	}
+  const authorizationCode = await waitForAuthorizationCode(8080);
+  if (!authorizationCode) {
+    console.error('Error getting authorization code');
+    return;
+  }
 
-	const tokens = await requestAccessToken(authorizationCode, clientId, clientSecret, redirectUri);
-	const accessToken = tokens.accessToken;
-	const refreshToken = tokens.refreshToken;
-	console.log('Access Token: ', accessToken);
-	console.log('Refresh Token: ', refreshToken);
+  const tokens = await requestAccessToken(authorizationCode, clientId, clientSecret, redirectUri);
+  const accessToken = tokens.accessToken;
+  const refreshToken = tokens.refreshToken;
+  console.log('Access Token: ', accessToken);
+  console.log('Refresh Token: ', refreshToken);
 
-	const userId = await getUserId(accessToken);
+  const userId = await getUserId(accessToken);
   if (!userId) {
     console.error('Error getting user ID');
     return;
   }
 
-	console.log('User ID: ', userId);
+  console.log('User ID: ', userId);
 
-	const trackId = await searchTrack(accessToken, query);
+  const trackId = await searchTrack(accessToken, query);
 
   if (trackId) {
     console.log('Track ID:', trackId);
@@ -264,23 +264,23 @@ async function findPlayList(playlists, name) {
     console.error('Track not found');
   }
 
-	const trackIds = [trackId];
-	const playLists = await getUserPlaylists(accessToken, userId);
-	const playlistId = await (async (accessToken, userId, lists, name) => {
-		const list = await findPlayList(lists, playlistName);
-		if (list && list.id) {
-			return list.id;
-		} else {
-			return await createPlaylist(accessToken, userId, name);
-		}
-	})(accessToken, userId, playLists, playlistName);
+  const trackIds = [trackId];
+  const playLists = await getUserPlaylists(accessToken, userId);
+  const playlistId = await (async (accessToken, userId, lists, name) => {
+    const list = await findPlayList(lists, playlistName);
+    if (list && list.id) {
+      return list.id;
+    } else {
+      return await createPlaylist(accessToken, userId, name);
+    }
+  })(accessToken, userId, playLists, playlistName);
 
-	console.log('Playlist ID:', playlistId);
+  console.log('Playlist ID:', playlistId);
 
-	try {
-  	await addTracksToPlaylist(accessToken, playlistId, trackIds);
-	  console.log('Tracks added to playlist');
-	} catch (error) {
-		console.error('Failed to add to playlist:', error.message);
-	}
+  try {
+    await addTracksToPlaylist(accessToken, playlistId, trackIds);
+    console.log('Tracks added to playlist');
+  } catch (error) {
+    console.error('Failed to add to playlist:', error.message);
+  }
 })();
