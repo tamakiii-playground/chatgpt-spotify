@@ -3,6 +3,7 @@ const querystring = require('querystring');
 const http = require('http');
 const url = require('url');
 const { exec } = require('child_process');
+const process = require('process');
 const crypto = require('crypto');
 
 async function getAccessToken(clientId, clientSecret) {
@@ -223,6 +224,16 @@ async function findPlayList(playlists, name) {
 	const scopes = ['playlist-read-private', 'playlist-modify-private', 'playlist-modify-public'];
 	const state = crypto.randomBytes(16).toString('hex');
 
+  const args = process.argv.slice(2);
+
+  if (args.length < 2) {
+    console.error('Usage: node main.js <playlist_name> "<artist_name> - <track_name>"');
+    return;
+  }
+
+  const playlistName = args[0];
+  const query = args[1];
+
 	openSpotifyAuthorizationUrl(clientId, redirectUri, scopes, state);
 
 	const authorizationCode = await waitForAuthorizationCode(8080);
@@ -245,7 +256,6 @@ async function findPlayList(playlists, name) {
 
 	console.log('User ID: ', userId);
 
-	const query = 'The Beatles - Come Together';
 	const trackId = await searchTrack(accessToken, query);
 
   if (trackId) {
@@ -254,12 +264,10 @@ async function findPlayList(playlists, name) {
     console.error('Track not found');
   }
 
-	const playlistName = 'My ChatGPT Playlist';
 	const trackIds = [trackId];
 	const playLists = await getUserPlaylists(accessToken, userId);
-	const playList = await findPlayList(playLists, playlistName);
-	console.log('Playlist ID: ', playList.id);
-	const playlistId = (async (accessToken, userId, list, name) => {
+	const playlistId = await (async (accessToken, userId, lists, name) => {
+		const list = await findPlayList(lists, playlistName);
 		if (list && list.id) {
 			return list.id;
 		} else {
@@ -267,12 +275,12 @@ async function findPlayList(playlists, name) {
 		}
 	})(accessToken, userId, playLists, playlistName);
 
-  console.log('Playlist:', playlistId);
+	console.log('Playlist ID:', playlistId);
 
 	try {
   	await addTracksToPlaylist(accessToken, playlistId, trackIds);
 	  console.log('Tracks added to playlist');
 	} catch (error) {
-		console.error('Failed to add to playlist');
+		console.error('Failed to add to playlist:', error.message);
 	}
 })();
