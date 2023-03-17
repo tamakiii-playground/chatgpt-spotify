@@ -6,7 +6,7 @@ help:
 setup: \
 	.env
 
-build: ../docker-compose.yaml
+build: docker-compose.yaml
 	docker compose build
 
 bash:
